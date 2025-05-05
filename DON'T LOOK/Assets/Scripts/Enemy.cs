@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 public class EnemyFollowWhenNotSeen : MonoBehaviour
 {
     public Transform player; // Player's transform to track movement and position
-    // public Camera playerCamera; // Main camera to control view snapping during attack
+    public Camera playerCamera; // Reference to the player's camera for line-of-sight and FOV check
     public MonoBehaviour playerLookScript; // Reference to player's camera control script (to disable on attack)
     public float detectionDistance = 20f; // Max range for detecting the player
     public float fieldOfView = 60f; // Player's field of view angle for determining line of sight
@@ -34,11 +34,30 @@ public class EnemyFollowWhenNotSeen : MonoBehaviour
         if (player == null) return; // Ensure player reference is set before proceeding.
 
         // Check if player is looking at enemy using dot product
-        Vector3 toEnemy = (transform.position - player.position).normalized; // Direction from player to enemy.
-        float dot = Vector3.Dot(player.forward, toEnemy); // Dot product to determine if player is looking at enemy.
-        bool isPlayerLooking = dot > Mathf.Cos(fieldOfView * Mathf.Deg2Rad); // Check if player is looking at enemy based on field of view.
+        // Vector3 toEnemy = (transform.position - player.position).normalized; // Direction from player to enemy.
+        // float dot = Vector3.Dot(player.forward, toEnemy); // Dot product to determine if player is looking at enemy.
+        // bool isPlayerLooking = dot > Mathf.Cos(fieldOfView * Mathf.Deg2Rad); // Check if player is looking at enemy based on field of view.
+
+        bool isPlayerLooking = false;
+        Vector3 cameraOrigin = playerCamera.transform.position;
+        Vector3 directionToEnemy = (transform.position - cameraOrigin).normalized;
+
+        float angleToEnemy = Vector3.Angle(playerCamera.transform.forward, directionToEnemy);
+        if (angleToEnemy < fieldOfView / 2f)
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(cameraOrigin, directionToEnemy, out hit, detectionDistance))
+            {
+                if (hit.transform == transform)
+                {
+                    isPlayerLooking = true;
+                }
+            }
+        }
+        
         float distance = Vector3.Distance(transform.position, player.position); // Distance from player to enemy.
 
+        Vector3 toEnemy = (transform.position - player.position).normalized; // Direction from player to enemy.
         Debug.DrawRay(player.position, player.forward * 2f, Color.green); // Draw ray from player to show direction of view.
         Debug.DrawRay(player.position, toEnemy * 2f, Color.red); // Draw ray from player to enemy to show direction to enemy.
         Debug.Log($"Distance: {distance}, isPlayerLooking: {isPlayerLooking}"); // Log distance and visibility status for debugging.
@@ -62,5 +81,5 @@ public class EnemyFollowWhenNotSeen : MonoBehaviour
         Vector3 lookPos = new Vector3(player.position.x, transform.position.y, player.position.z);
         transform.LookAt(lookPos);
     }
-    
+
 }
