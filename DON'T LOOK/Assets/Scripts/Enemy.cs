@@ -22,8 +22,8 @@ public class EnemyFollowWhenNotSeen : MonoBehaviour
     /// </summary>
     void Start()
     {
-        animator = GetComponent<Animator>();
-        agent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>(); // Get the Animator component for controlling animations/
+        agent = GetComponent<NavMeshAgent>(); // Get the NavMeshAgent component for pathfinding.
     }
 
     /// <summary>
@@ -31,26 +31,25 @@ public class EnemyFollowWhenNotSeen : MonoBehaviour
     /// </summary>
     void Update()
     {
-        if (player == null) return;
+        if (player == null) return; // Ensure player reference is set before proceeding.
 
         // Check if player is looking at enemy using dot product
-        Vector3 toEnemy = (transform.position - player.position).normalized;
-        float dot = Vector3.Dot(player.forward, toEnemy);
-        bool isPlayerLooking = dot > Mathf.Cos(fieldOfView * Mathf.Deg2Rad);
-        float distance = Vector3.Distance(transform.position, player.position);
+        Vector3 toEnemy = (transform.position - player.position).normalized; // Direction from player to enemy.
+        float dot = Vector3.Dot(player.forward, toEnemy); // Dot product to determine if player is looking at enemy.
+        bool isPlayerLooking = dot > Mathf.Cos(fieldOfView * Mathf.Deg2Rad); // Check if player is looking at enemy based on field of view.
+        float distance = Vector3.Distance(transform.position, player.position); // Distance from player to enemy.
 
-        Debug.DrawRay(player.position, player.forward * 2f, Color.green);
-        Debug.DrawRay(player.position, toEnemy * 2f, Color.red);
-
-        Debug.Log($"Distance: {distance}, isPlayerLooking: {isPlayerLooking}");
+        Debug.DrawRay(player.position, player.forward * 2f, Color.green); // Draw ray from player to show direction of view.
+        Debug.DrawRay(player.position, toEnemy * 2f, Color.red); // Draw ray from player to enemy to show direction to enemy.
+        Debug.Log($"Distance: {distance}, isPlayerLooking: {isPlayerLooking}"); // Log distance and visibility status for debugging.
 
         // If player is not looking and enemy is in range, move toward player
         // Check if the player is not looking at the enemy and the enemy is within detection range
         if (!isPlayerLooking && distance < detectionDistance)
         {
-            agent.isStopped = false;
-            agent.SetDestination(player.position);
-            animator.SetBool("IsWalking", true);
+            agent.isStopped = false; // Enable movement.
+            agent.SetDestination(player.position); // Set the destination to the player's position.
+            animator.SetBool("IsWalking", true); // Set walking animation to true.
         }
         else
         {
@@ -63,4 +62,5 @@ public class EnemyFollowWhenNotSeen : MonoBehaviour
         Vector3 lookPos = new Vector3(player.position.x, transform.position.y, player.position.z);
         transform.LookAt(lookPos);
     }
+    
 }
